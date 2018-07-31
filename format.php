@@ -203,6 +203,8 @@ class qformat_qti extends qformat_default {
 // =====================================================================================================================
             case 'truefalse':
 
+                $this->process_multichoice_question($xml_param, $question);
+                $valid_question = true;
                 break;
 // =====================================================================================================================
             case 'multianswer':
@@ -273,6 +275,7 @@ class qformat_qti extends qformat_default {
 
     private function process_multichoice_question(&$xml_param, $question) {
 
+        // This function is also used to build truefalse type questions
         $response_id = $this->get_response_id($question);
         $shuffle_answers = ($question->options->shuffleanswers==1) ? "true" : "false";
         $xml_param->response_type = "identifier";
@@ -282,7 +285,7 @@ class qformat_qti extends qformat_default {
         $correct_answers = "";
         $wrong_answers = "";
 
-        if($question->options->single==1) {
+        if($question->options->single==1 || $question->qtype=='truefalse' ) {
             // Single answer multichoice
             $response_cardinality = "single";
             $max_choices = 1;
@@ -291,9 +294,9 @@ class qformat_qti extends qformat_default {
             $response_cardinality = "multiple";
             $max_choices = 0;
         }
-
+        $inspira_truefalse = ($question->qtype=='truefalse') ? ' inspera:variant="true_false"' : '';
         $xml_param->question_interaction = '
-    <choiceInteraction responseIdentifier="'.$response_id.'" shuffle="'.$shuffle_answers.'" maxChoices="'.$max_choices.'">     
+    <choiceInteraction responseIdentifier="'.$response_id.'" shuffle="'.$shuffle_answers.'" maxChoices="'.$max_choices.'"'.$inspira_truefalse.'>     
         ';
         foreach($question->options->answers as $answer) {
             $member = '
@@ -301,8 +304,10 @@ class qformat_qti extends qformat_default {
                                      <baseValue baseType="identifier">CHOICE_'.$answer->id.'</baseValue>
                                      <variable identifier="'.$response_id.'"/>
                                    </member>';
+
             $xml_param->question_interaction .= '
-      <simpleChoice identifier="CHOICE_'.$answer->id.'">'.$this->cleanHTML($answer->answer).'<feedbackInline outcomeIdentifier="FEEDBACK" identifier="CHOICE_'.$answer->id.'" showHide="show">'.$answer->feedback.'</feedbackInline></simpleChoice>';
+      <simpleChoice identifier="CHOICE_'.$answer->id.'">'.$answer->answer.
+                    '<feedbackInline outcomeIdentifier="FEEDBACK" identifier="CHOICE_'.$answer->id.'" showHide="show">'.$this->cleanHTML($answer->feedback).'</feedbackInline></simpleChoice>';
 
             if($answer->fraction>0) {
                 $correct_responses .= '
