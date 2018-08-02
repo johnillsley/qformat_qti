@@ -27,7 +27,7 @@ namespace qformat_qti\privacy;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Privacy Subsystem for qformat_xhtml implementing null_provider.
+ * Privacy Subsystem for qformat_qti implementing null_provider.
  *
  * @copyright  2018 John Illsley <j.s.illsley@bath.ac.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
