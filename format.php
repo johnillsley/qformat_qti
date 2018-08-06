@@ -38,6 +38,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once('template.php');
 
+
 class qformat_qti extends qformat_default {
 
     /** @var SimpleXMLElement $imsmanifest */
@@ -125,7 +126,7 @@ class qformat_qti extends qformat_default {
     private function find_images( $question, $contextid ) {
         global $CFG, $USER;
 
-        $id = $question->id;
+        $id = (isset($question->id)) ? $question->id : 0;
 
         foreach ($question as $k => $v) {
 
@@ -137,9 +138,10 @@ class qformat_qti extends qformat_default {
                 if ($pos = stripos( $v, '@@PLUGINFILE@@')) {
                     // Found an image.
                     $sub = substr( $v, ($pos + 15) );
-                    $filename = urldecode(substr( $sub, 0, strpos( $sub, '"')));
+                    $filename = substr( $sub, 0, strpos( $sub, '"'));
+
                     // Make sure images with the same name are dealt with.
-                    $safefilename = $k . '-' . $id . '-' . str_replace(" ", "", $filename);
+                    $safefilename = $k . '-' . $id . '-' . str_replace(array(" ", "%20"), "", $filename);
 
                     // Update URL.
                     $v = str_replace( '@@PLUGINFILE@@', 'images', $v );
@@ -147,7 +149,7 @@ class qformat_qti extends qformat_default {
 
                     // Get file and add to zip archive.
                     $fs = get_file_storage();
-                    $file = $fs->get_file($contextid, 'question', $k, $id, '/', $filename );
+                    $file = $fs->get_file($contextid, 'question', $k, $id, '/', urldecode($filename) );
                     $file->copy_content_to($CFG->dataroot.'/temp/qti-export-'.$USER->sesskey.'/'.$safefilename);
                     $this->zip->addFile( $CFG->dataroot . '/temp/qti-export-'.$USER->sesskey.'/'. $safefilename,
                             'images/'.$safefilename);
@@ -177,14 +179,20 @@ class qformat_qti extends qformat_default {
         $xmlparam->question_title = $question->name;
         $xmlparam->question_text = $this->cleanhtml($question->questiontext);
         $xmlparam->response_mapping = '';
-        $xmlparam->question_correct_feedback = $this->cleanhtml($question->options->correctfeedback);
-        $xmlparam->question_partially_correct_feedback = $this->cleanhtml($question->options->partiallycorrectfeedback);
-        $xmlparam->question_incorrect_feedback = $this->cleanhtml($question->options->incorrectfeedback);
-        $xmlparam->correct_response = '';
+        $xmlparam->question_correct_feedback = (isset($question->options->correctfeedback))
+                ? $this->cleanhtml($question->options->correctfeedback)
+                : '';
+        $xmlparam->question_partially_correct_feedback = (isset($question->options->partiallycorrectfeedback))
+                ? $this->cleanhtml($question->options->partiallycorrectfeedback)
+                : '';
+        $xmlparam->question_incorrect_feedback = (isset($question->options->incorrectfeedback))
+                ? $this->cleanhtml($question->options->incorrectfeedback)
+                : '';
         $xmlparam->question_correct_answers = '';
         $xmlparam->question_wrong_answers = '';
         $xmlparam->response_declaration = '';
         $xmlparam->output_declaration = '';
+        $xmlparam->response_condition_score = '';
         $xmlparam->response_fb_unasnswered = '';
         $xmlparam->response_fb_correct = '';
         $xmlparam->response_fb_partially = '';
@@ -213,7 +221,7 @@ class qformat_qti extends qformat_default {
 
             case 'multianswer':
 
-                $xmlparam->questioninteraction = '';
+                $xmlparam->question_interaction = '';
 
                 foreach ($question->options->questions as $qid => $subquestion) {
 
@@ -233,10 +241,10 @@ class qformat_qti extends qformat_default {
                     // Put form element into question item body.
                     $xmlparam->question_text = str_replace(
                             '{#'.$qid.'}',
-                            $xmlparam->questioninteraction,
+                            $xmlparam->question_interaction,
                             $xmlparam->question_text);
                     // Now the form element is embedded no need to add it in conventional itemBody.
-                    $xmlparam->questioninteraction = "";
+                    $xmlparam->question_interaction = "";
                 }
 
                 $validquestion = true;
@@ -290,6 +298,14 @@ class qformat_qti extends qformat_default {
 
         // This function is also used to build truefalse type questions.
         $responseid = $this->get_response_id($question);
+
+        if (empty($question->options->shuffleanswers)) {
+            $question->options->shuffleanswers = 0;
+        }
+        if (empty($question->options->single)) {
+            $question->options->single = 1;
+        }
+
         $shuffleanswers = ($question->options->shuffleanswers == 1) ? "true" : "false";
         $xmlparam->response_type = "identifier";
         $responsemappings = "";
@@ -307,20 +323,20 @@ class qformat_qti extends qformat_default {
             $maxchoices = 0;
         }
         $inspiratruefalse = ($question->qtype == 'truefalse') ? ' inspera:variant="true_false"' : '';
-        $xmlparam->questioninteraction = '
+        $xmlparam->question_interaction = '
     <choiceInteraction responseIdentifier="'.$responseid.'" shuffle="'.$shuffleanswers.'"
         maxChoices="'.$maxchoices.'"'.$inspiratruefalse.'>
         ';
         foreach ($question->options->answers as $answer) {
             $member = '
-                                   <member>
-                                     <baseValue baseType="identifier">CHOICE_'.$answer->id.'</baseValue>
-                                     <variable identifier="'.$responseid.'"/>
-                                   </member>';
+           <member>
+             <baseValue baseType="identifier">CHOICE_'.$answer->id.'</baseValue>
+             <variable identifier="'.$responseid.'"/>
+           </member>';
 
-            $xmlparam->questioninteraction .= '
-      <simpleChoice identifier="CHOICE_'.$answer->id.'">'.$answer->answer.
-                    '<feedbackInline outcomeIdentifier="FEEDBACK" identifier="CHOICE_'.$answer->id.'" showHide="show">'
+            $xmlparam->question_interaction .= '
+      <simpleChoice identifier="CHOICE_'.$answer->id.'">'.$this->cleanhtml($answer->answer)
+                    .'<feedbackInline outcomeIdentifier="FEEDBACK" identifier="CHOICE_'.$answer->id.'" showHide="show">'
                     .strip_tags($this->cleanhtml($answer->feedback)).'</feedbackInline>
       </simpleChoice>';
 
@@ -335,7 +351,7 @@ class qformat_qti extends qformat_default {
                 $wronganswers .= $member;
             }
         }
-        $xmlparam->questioninteraction .= '
+        $xmlparam->question_interaction .= '
     </choiceInteraction>';
         $xmlparam->response_declaration .= '
   <responseDeclaration identifier="'.$responseid.'" cardinality="'.$responsecardinality.'" baseType="identifier">
@@ -411,7 +427,7 @@ class qformat_qti extends qformat_default {
         $casesensitive = ($question->options->usecase == 0) ? 'false' : 'true';
 
         $xmlparam->question_max_score++; // Make all numeric questions score one point.
-        $xmlparam->questioninteraction = '
+        $xmlparam->question_interaction = '
     <textEntryInteraction expectedLength="50" responseIdentifier="'.$responseid.'" inspera:inputFieldWidth="20"/>';
 
         $correctanswers = "";
@@ -510,8 +526,7 @@ class qformat_qti extends qformat_default {
         $responseid = $this->get_response_id($question);
 
         $xmlparam->question_max_score++; // Make all numeric questions score one point.
-        $xmlparam->questioninteraction = '
-    <textEntryInteraction expectedLength="0" responseIdentifier="'.$responseid.'"
+        $xmlparam->question_interaction = '<textEntryInteraction expectedLength="0" responseIdentifier="'.$responseid.'"
         inspera:inputFieldWidth="3" inspera:type="numeric"/>';
 
         $answer = array_shift($question->options->answers); // Only take the first answer if there are more than one.
@@ -640,7 +655,6 @@ class qformat_qti extends qformat_default {
 
         $file = $resource->addChild("file");
         $file->addAttribute("href", $filename);
-        $file->addAttribute("href", $filename);
     }
 
     /**
@@ -689,6 +703,10 @@ class qformat_qti extends qformat_default {
      * @return string $html filtered to remove problems
      */
     private function cleanhtml($html) {
+
+        if (empty($html)) {
+            return "";
+        }
 
         $dom = new DOMDocument('1.0', 'UTF-8'); // Init new DOMDocument.
         $html = mb_convert_encoding($html, 'HTML-ENTITIES', "UTF-8");

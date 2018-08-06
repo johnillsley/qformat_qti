@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assessmentItem xmlns="http://www.imsglobal.org/xsd/imsqti_v2p1"
+                xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_v2p1  http://www.imsglobal.org/xsd/qti/qtiv2p1/imsqti_v2p1.xsd"
+                identifier="httpswwwexamplecommoodle_666"
+                title="Q1"
+                adaptive="false"
+                timeDependent="false"
+                xmlns:java="http://xml.apache.org/xalan/java"
+                xmlns:imsmd="http://www.imsglobal.org/xsd/imsmd_v1p2"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <responseDeclaration identifier="RESPONSE_httpswwwexamplecommoodle_666" cardinality="single" baseType="identifier">
+        <correctResponse>
+
+            <value>CHOICE_123</value>
+        </correctResponse>
+        <mapping defaultValue="0">
+
+            <mapEntry mapKey="CHOICE_123" mappedValue="1"/>
+        </mapping>
+    </responseDeclaration>
+
+    <outcomeDeclaration identifier="SCORE" cardinality="single" baseType="float">
+        <defaultValue>
+            <value>0</value>
+        </defaultValue>
+    </outcomeDeclaration>
+
+    <outcomeDeclaration identifier="FEEDBACK" cardinality="single" baseType="identifier"/>
+
+    <outcomeDeclaration identifier="isCorrect_RESPONSE_httpswwwexamplecommoodle_666" cardinality="single" baseType="string"/>
+
+    <templateDeclaration identifier="SCORE_EACH_CORRECT" cardinality="single" baseType="float">
+        <defaultValue><value>1</value></defaultValue>
+    </templateDeclaration>
+    <templateDeclaration identifier="SCORE_EACH_WRONG" cardinality="single" baseType="float">
+        <defaultValue><value>0</value></defaultValue>
+    </templateDeclaration>
+    <templateDeclaration identifier="SCORE_ALL_CORRECT" cardinality="single" baseType="float">
+        <defaultValue><value/></defaultValue>
+    </templateDeclaration>
+    <templateDeclaration identifier="SCORE_MINIMUM" cardinality="single" baseType="float">
+        <defaultValue><value/></defaultValue>
+    </templateDeclaration>
+    <templateDeclaration identifier="SCORE_UNANSWERED" cardinality="single" baseType="float">
+        <defaultValue><value>0</value></defaultValue>
+    </templateDeclaration>
+
+    <itemBody inspera:defaultLanguage="en_us" inspera:supportedLanguages="en_us" xmlns:inspera="http://www.inspera.no/qti">
+        <p>42 is the Absolute Answer to everything.</p>
+
+        <choiceInteraction responseIdentifier="RESPONSE_httpswwwexamplecommoodle_666" shuffle="false"
+                           maxChoices="1" inspera:variant="true_false">
+
+            <simpleChoice identifier="CHOICE_123"><p>True</p><feedbackInline outcomeIdentifier="FEEDBACK" identifier="CHOICE_123" showHide="show">You gave the right answer.</feedbackInline>
+            </simpleChoice>
+            <simpleChoice identifier="CHOICE_124"><p>False</p><feedbackInline outcomeIdentifier="FEEDBACK" identifier="CHOICE_124" showHide="show">42 is the Ultimate Answer.</feedbackInline>
+            </simpleChoice>
+        </choiceInteraction>
+    </itemBody>
+
+    <responseProcessing>
+
+
+        <responseCondition>
+            <responseIf>
+                <and>
+                    <isNull>
+                        <variable identifier="RESPONSE_httpswwwexamplecommoodle_666"/>
+                    </isNull>
+                </and>
+                <setOutcomeValue identifier="SCORE">
+                    <sum>
+                        <variable identifier="SCORE"/>
+                        <variable identifier="SCORE_UNANSWERED"/>
+                    </sum>
+                </setOutcomeValue>
+            </responseIf>
+
+            <responseElse>
+                <setOutcomeValue identifier="SCORE">
+                    <sum>
+                        <variable identifier="SCORE"/>
+                        <mapResponse identifier="RESPONSE_httpswwwexamplecommoodle_666"/>
+                    </sum>
+                </setOutcomeValue>
+            </responseElse>
+        </responseCondition>
+
+        <responseCondition>
+            <responseIf>
+                <and>
+
+                    <isNull>
+                        <variable identifier="RESPONSE_httpswwwexamplecommoodle_666"/>
+                    </isNull>
+                </and>
+                <setOutcomeValue identifier="FEEDBACK">
+                    <baseValue baseType="identifier">feedback_unanswered</baseValue>
+                </setOutcomeValue>
+            </responseIf>
+            <responseElseIf>
+                <and>
+
+                    <and>
+
+                        <member>
+                            <baseValue baseType="identifier">CHOICE_123</baseValue>
+                            <variable identifier="RESPONSE_httpswwwexamplecommoodle_666"/>
+                        </member>
+                        <not>
+                            <or>
+
+                                <member>
+                                    <baseValue baseType="identifier">CHOICE_124</baseValue>
+                                    <variable identifier="RESPONSE_httpswwwexamplecommoodle_666"/>
+                                </member>
+                            </or>
+                        </not>
+                    </and>
+                </and>
+                <setOutcomeValue identifier="FEEDBACK">
+                    <baseValue baseType="identifier">feedback_correct</baseValue>
+                </setOutcomeValue>
+            </responseElseIf>
+            <responseElseIf>
+                <or>
+
+                    <and>
+
+                        <member>
+                            <baseValue baseType="identifier">CHOICE_123</baseValue>
+                            <variable identifier="RESPONSE_httpswwwexamplecommoodle_666"/>
+                        </member>
+                    </and>
+                </or>
+                <setOutcomeValue identifier="FEEDBACK">
+                    <baseValue baseType="identifier">feedback_partially_correct</baseValue>
+                </setOutcomeValue>
+            </responseElseIf>
+            <responseElse>
+                <setOutcomeValue identifier="FEEDBACK">
+                    <baseValue baseType="identifier">feedback_wrong</baseValue>
+                </setOutcomeValue>
+            </responseElse>
+        </responseCondition>
+
+        <responseCondition inspera:type="max_score_upper_bound" xmlns:inspera="http://www.inspera.no/qti">
+            <responseIf>
+                <and>
+                    <gte>
+                        <variable identifier="SCORE"/>
+                        <baseValue baseType="float">1</baseValue>
+                    </gte>
+                </and>
+                <setOutcomeValue identifier="SCORE">
+                    <baseValue baseType="float">1</baseValue>
+                </setOutcomeValue>
+            </responseIf>
+        </responseCondition>
+
+    </responseProcessing>
+
+    <modalFeedback outcomeIdentifier="FEEDBACK" identifier="feedback_unanswered" showHide="show"></modalFeedback>
+    <modalFeedback outcomeIdentifier="FEEDBACK" identifier="feedback_wrong" showHide="show"></modalFeedback>
+    <modalFeedback outcomeIdentifier="FEEDBACK" identifier="feedback_correct" showHide="show"></modalFeedback>
+    <modalFeedback outcomeIdentifier="FEEDBACK" identifier="feedback_partially_correct" showHide="show"></modalFeedback>
+</assessmentItem>

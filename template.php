@@ -40,7 +40,8 @@ identifier="'.$xmlparam->question_id.'"
 title="'.$xmlparam->question_title.'"
 adaptive="false"
 timeDependent="false"
-xmlns:java="http://xml.apache.org/xalan/java" xmlns:imsmd="http://www.imsglobal.org/xsd/imsmd_v1p2"
+xmlns:java="http://xml.apache.org/xalan/java"
+xmlns:imsmd="http://www.imsglobal.org/xsd/imsmd_v1p2"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 '.$xmlparam->response_declaration.'
 
@@ -126,17 +127,13 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
   </responseProcessing>
 
-  <modalFeedback outcomeIdentifier="FEEDBACK" identifier="feedback_unanswered" showHide="show">
-  </modalFeedback>
-  <modalFeedback outcomeIdentifier="FEEDBACK" identifier="feedback_wrong" showHide="show">
-'.$xmlparam->question_incorrect_feedback.'
-  </modalFeedback>
-  <modalFeedback outcomeIdentifier="FEEDBACK" identifier="feedback_correct" showHide="show">
-'.$xmlparam->question_correct_feedback.'
-  </modalFeedback>
-  <modalFeedback outcomeIdentifier="FEEDBACK" identifier="feedback_partially_correct" showHide="show">
-'.$xmlparam->question_partially_correct_feedback.'
-  </modalFeedback>
+  <modalFeedback outcomeIdentifier="FEEDBACK" identifier="feedback_unanswered" showHide="show"></modalFeedback>
+  <modalFeedback outcomeIdentifier="FEEDBACK" identifier="feedback_wrong" showHide="show">'
+            .$xmlparam->question_incorrect_feedback.'</modalFeedback>
+  <modalFeedback outcomeIdentifier="FEEDBACK" identifier="feedback_correct" showHide="show">'
+            .$xmlparam->question_correct_feedback.'</modalFeedback>
+  <modalFeedback outcomeIdentifier="FEEDBACK" identifier="feedback_partially_correct" showHide="show">'
+            .$xmlparam->question_partially_correct_feedback.'</modalFeedback>
 </assessmentItem>';
 
     return $xml;

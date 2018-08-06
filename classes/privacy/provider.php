@@ -18,7 +18,8 @@
  * Privacy Subsystem implementation for qformat_qti.
  *
  * @package    qformat_qti
- * @copyright  2018 John Illsley <j.s.illsley@bath.ac.uk>
+ * @author     John Illsley <j.s.illsley@bath.ac.uk>
+ * @copyright  2018 University of Bath
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -28,9 +29,6 @@ defined('MOODLE_INTERNAL') || die();
 
 /**
  * Privacy Subsystem for qformat_qti implementing null_provider.
- *
- * @copyright  2018 John Illsley <j.s.illsley@bath.ac.uk>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider implements \core_privacy\local\metadata\null_provider {
 
