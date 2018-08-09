@@ -54,15 +54,6 @@ class qformat_qti_test extends question_testcase {
         xml_parse_into_struct($parser, $text, $actualvalues, $actualtags);
         xml_parser_free($parser);
 
-        /*
-        $xml = simplexml_load_string($expectedtext, "SimpleXMLElement");
-        $json = json_encode($xml);
-        $expectedarray = json_decode($json, true);
-
-        $xml = simplexml_load_string($text, "SimpleXMLElement");
-        $json = json_encode($xml);
-        $actualarray = json_decode($json, true);
-*/
         $this->assertEquals($expectedvalues, $actualvalues);
         $this->assertEquals($expectedtags, $actualtags);
     }
@@ -106,6 +97,7 @@ class qformat_qti_test extends question_testcase {
 
         $qdata = (object) array(
                 'id' => 666,
+                'parent' => 0,
                 'name' => 'Q8',
                 'questiontext' => "What's between orange and green in the spectrum?",
                 'questiontextformat' => FORMAT_MOODLE,
@@ -166,6 +158,7 @@ class qformat_qti_test extends question_testcase {
 
         $qdata = (object) array(
                 'id' => 666,
+                'parent' => 0,
                 'name' => 'Q5',
                 'questiontext' => "What is a number from 1 to 5?",
                 'questiontextformat' => FORMAT_MOODLE,
@@ -224,6 +217,7 @@ class qformat_qti_test extends question_testcase {
 
         $qdata = (object) array(
                 'id' => 666,
+                'parent' => 0,
                 'name' => 'Shortanswer',
                 'questiontext' => "Which is the best animal?",
                 'questiontextformat' => FORMAT_MOODLE,
@@ -278,6 +272,7 @@ class qformat_qti_test extends question_testcase {
 
         $qdata = (object) array(
                 'id' => 666,
+                'parent' => 0,
                 'name' => 'Q1',
                 'questiontext' => "42 is the Absolute Answer to everything.",
                 'questiontextformat' => FORMAT_MOODLE,
@@ -325,6 +320,7 @@ class qformat_qti_test extends question_testcase {
 
         $qdata = (object) array(
                 'id' => 48,
+                'parent' => 0,
                 'name' => 'Cloze',
                 'questiontext' => '<p>{#1} is the capital of Germany.<br></p><p>This question consists of some text with an answer embedded right here{#2}<br></p><p>What is 10 divided by 4? {#3}.<br></p>',
                 'questiontextformat' => FORMAT_MOODLE,

@@ -55,7 +55,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 '.$xmlparam->output_declaration.'
 
   <templateDeclaration identifier="SCORE_EACH_CORRECT" cardinality="single" baseType="float">
-    <defaultValue><value>1</value></defaultValue>
+    <defaultValue><value>'.$xmlparam->question_single_score.'</value></defaultValue>
   </templateDeclaration>
   <templateDeclaration identifier="SCORE_EACH_WRONG" cardinality="single" baseType="float">
     <defaultValue><value>0</value></defaultValue>

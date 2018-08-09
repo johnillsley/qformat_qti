@@ -245,6 +245,7 @@ class qformat_qti extends qformat_default {
                             $xmlparam->question_text);
                     // Now the form element is embedded no need to add it in conventional itemBody.
                     $xmlparam->question_interaction = "";
+                    $xmlparam->question_single_score = 1;
                 }
 
                 $validquestion = true;
@@ -299,13 +300,15 @@ class qformat_qti extends qformat_default {
         // This function is also used to build truefalse type questions.
         $responseid = $this->get_response_id($question);
 
-        if (empty($question->options->shuffleanswers)) {
+        if (!isset($question->options->shuffleanswers)) {
             $question->options->shuffleanswers = 0;
         }
-        if (empty($question->options->single)) {
+
+        if (!isset($question->options->single)) {
             $question->options->single = 1;
         }
 
+        $xmlparam->question_single_score = 1; // Set it to something but will be overridden by scores set in mapEntry tags.
         $shuffleanswers = ($question->options->shuffleanswers == 1) ? "true" : "false";
         $xmlparam->response_type = "identifier";
         $responsemappings = "";
@@ -314,11 +317,11 @@ class qformat_qti extends qformat_default {
         $wronganswers = "";
 
         if ($question->options->single == 1 || $question->qtype == 'truefalse') {
-            // Single answer multichoice.
+            // Single answer multiple choice.
             $responsecardinality = "single";
             $maxchoices = 1;
         } else {
-            // Multi answer multichoice.
+            // Multi answer multiple choice.
             $responsecardinality = "multiple";
             $maxchoices = 0;
         }
@@ -334,18 +337,28 @@ class qformat_qti extends qformat_default {
              <variable identifier="'.$responseid.'"/>
            </member>';
 
+            // If the multiple choice question is a child of a cloze (multianswer) question for some reason html tags in answer text
+            // prevent it being being edited in Inspira. If it is a stand alone multiple choice html tags can be left in.
+
+            if ($question->parent > 0) {
+                $answertext = strip_tags($answer->answer);
+            } else {
+                $answertext = $this->cleanhtml($answer->answer);
+            }
+
             $xmlparam->question_interaction .= '
-      <simpleChoice identifier="CHOICE_'.$answer->id.'">'.$this->cleanhtml($answer->answer)
+      <simpleChoice identifier="CHOICE_'.$answer->id.'">'.$answertext
                     .'<feedbackInline outcomeIdentifier="FEEDBACK" identifier="CHOICE_'.$answer->id.'" showHide="show">'
                     .strip_tags($this->cleanhtml($answer->feedback)).'</feedbackInline>
       </simpleChoice>';
 
             if ($answer->fraction > 0) {
+                $score = $answer->fraction * $question->defaultmark;
                 $correctresponses .= '
       <value>CHOICE_'.$answer->id.'</value>';
                 $responsemappings .= '
-      <mapEntry mapKey="CHOICE_'.$answer->id.'" mappedValue="'.$answer->fraction * $question->defaultmark.'"/>';
-                $xmlparam->question_max_score += $answer->fraction * $question->defaultmark;
+      <mapEntry mapKey="CHOICE_'.$answer->id.'" mappedValue="'.$score.'"/>';
+                $xmlparam->question_max_score += $score;
                 $correctanswers .= $member;
             } else {
                 $wronganswers .= $member;
@@ -426,10 +439,10 @@ class qformat_qti extends qformat_default {
         $responseid = $this->get_response_id($question);
         $casesensitive = ($question->options->usecase == 0) ? 'false' : 'true';
 
-        $xmlparam->question_max_score++; // Make all numeric questions score one point.
         $xmlparam->question_interaction = '
     <textEntryInteraction expectedLength="50" responseIdentifier="'.$responseid.'" inspera:inputFieldWidth="20"/>';
 
+        $highestfraction = 0;
         $correctanswers = "";
         foreach ($question->options->answers as $answer) {
             $correctanswers .= '
@@ -437,8 +450,14 @@ class qformat_qti extends qformat_default {
             <baseValue baseType="string">'.$answer->answer.'</baseValue>
             <variable identifier="'.$responseid.'"/>
           </stringMatch>';
+            // Identify the highest scoring answer.
+            if ( $answer->fraction > $highestfraction ) {
+                $highestfraction = $answer->fraction;
+            }
         }
         $xmlparam->question_correct_answers .= $correctanswers;
+        $xmlparam->question_max_score += $highestfraction * $question->defaultmark;
+        $xmlparam->question_single_score = $highestfraction * $question->defaultmark;
 
         $xmlparam->response_declaration .= '
   <responseDeclaration identifier="'.$responseid.'" cardinality="single" baseType="string">
@@ -525,7 +544,6 @@ class qformat_qti extends qformat_default {
 
         $responseid = $this->get_response_id($question);
 
-        $xmlparam->question_max_score++; // Make all numeric questions score one point.
         $xmlparam->question_interaction = '<textEntryInteraction expectedLength="0" responseIdentifier="'.$responseid.'"
         inspera:inputFieldWidth="3" inspera:type="numeric"/>';
 
@@ -534,6 +552,8 @@ class qformat_qti extends qformat_default {
         $answer->tolerance = (is_numeric($answer->tolerance)) ? $answer->tolerance : 0;
         $lowervalue = $answer->answer - $answer->tolerance;
         $uppervalue = $answer->answer + $answer->tolerance;
+        $xmlparam->question_max_score += $answer->fraction * $question->defaultmark;
+        $xmlparam->question_single_score = $answer->fraction * $question->defaultmark;
 
         $xmlparam->response_declaration .= '
   <responseDeclaration identifier="'.$responseid.'" cardinality="single" baseType="float">

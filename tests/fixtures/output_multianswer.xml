@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <assessmentItem xmlns="http://www.imsglobal.org/xsd/imsqti_v2p1"
                 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_v2p1  http://www.imsglobal.org/xsd/qti/qtiv2p1/imsqti_v2p1.xsd"
                 identifier="httpswwwexamplecommoodle_48"
@@ -63,14 +62,14 @@
             <textEntryInteraction expectedLength="50" responseIdentifier="RESPONSE_httpswwwexamplecommoodle_49" inspera:inputFieldWidth="20"/> is the capital of Germany.<br /><p>This question consists of some text with an answer embedded right here
     <choiceInteraction responseIdentifier="RESPONSE_httpswwwexamplecommoodle_50" shuffle="false" maxChoices="1">
 
-                <simpleChoice identifier="CHOICE_117"><p>Wrong answer</p><feedbackInline outcomeIdentifier="FEEDBACK" identifier="CHOICE_117" showHide="show">Feedback for this wrong answer</feedbackInline>
+                <simpleChoice identifier="CHOICE_117">Wrong answer<feedbackInline outcomeIdentifier="FEEDBACK" identifier="CHOICE_117" showHide="show">Feedback for this wrong answer</feedbackInline>
                 </simpleChoice>
-                <simpleChoice identifier="CHOICE_118"><p>Another wrong answer</p><feedbackInline outcomeIdentifier="FEEDBACK" identifier="CHOICE_118" showHide="show">Feedback for the other wrong answer</feedbackInline>
+                <simpleChoice identifier="CHOICE_118">Another wrong answer<feedbackInline outcomeIdentifier="FEEDBACK" identifier="CHOICE_118" showHide="show">Feedback for the other wrong answer</feedbackInline>
                 </simpleChoice>
-                <simpleChoice identifier="CHOICE_119"><p>Correct answer</p><feedbackInline outcomeIdentifier="FEEDBACK" identifier="CHOICE_119" showHide="show">Feedback for correct answer</feedbackInline>
+                <simpleChoice identifier="CHOICE_119">Correct answer<feedbackInline outcomeIdentifier="FEEDBACK" identifier="CHOICE_119" showHide="show">Feedback for correct answer</feedbackInline>
                 </simpleChoice>
             </choiceInteraction><br /></p><p>What is 10 divided by 4? <textEntryInteraction expectedLength="0" responseIdentifier="RESPONSE_httpswwwexamplecommoodle_53"
-                                  inspera:inputFieldWidth="3" inspera:type="numeric"/>.<br /></p></p>
+                                                                                            inspera:inputFieldWidth="3" inspera:type="numeric"/>.<br /></p></p>
 
     </itemBody>
 
