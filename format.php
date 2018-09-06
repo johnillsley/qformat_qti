@@ -118,41 +118,59 @@ class qformat_qti extends qformat_default {
     }
 
     /**
-     * Scans a question object (including answers) for media files - updates reference to them and adds files to QTI zip archive
+     * Scans all properties of a question object (including answers) for media files - updates reference to them and adds files
+     * to QTI zip archive. There are two ways in which embedded files are saved in Moodle, the old way using file.php and the new
+     * way using %%PLUGINFILE%%; this funsction works for both.
      * @param object $question
-     * @param integer $contextid context of question (question category)
+     * @param integer $contextid context id of course
+     * @param integer $questioncatid question category id
      * @return object $question modified to reference the images folder
      */
-    private function find_images( $question, $contextid ) {
-        global $CFG, $USER;
+    private function find_images( $question, $contextid, $questioncatid ) {
+        global $CFG, $DB, $USER;
 
         $id = (isset($question->id)) ? $question->id : 0;
 
         foreach ($question as $k => $v) {
 
             if (is_array($v)) {
-                $v[$k] = $this->find_images( $v, $contextid);
+                $v[$k] = $this->find_images( $v, $contextid, $questioncatid);
             } else if (is_object( $v )) {
-                $v->$k = $this->find_images( $v, $contextid);
-            } else {
-                if ($pos = stripos( $v, '@@PLUGINFILE@@')) {
-                    // Found an image.
-                    $sub = substr( $v, ($pos + 15) );
-                    $filename = substr( $sub, 0, strpos( $sub, '"'));
+                $v->$k = $this->find_images( $v, $contextid, $questioncatid);
+            } else if (!empty($v)) {
+
+                $doc = new DOMDocument();
+                $doc->loadHTML($v);
+                $xpath = new DOMXPath($doc);
+                $instance = 1; // Start by looking for first instance of img tag.
+
+                while ( $src = $xpath->evaluate("string(//img[$instance]/@src)") ) {
+
+                    $filenamestart = strrpos( $src , '/') + 1;
+                    $filename = substr($src, $filenamestart, (strlen($src) - $filenamestart));
 
                     // Make sure images with the same name are dealt with.
                     $safefilename = $k . '-' . $id . '-' . str_replace(array(" ", "%20"), "", $filename);
-
-                    // Update URL.
-                    $v = str_replace( '@@PLUGINFILE@@', 'images', $v );
                     $v = str_replace( $filename, $safefilename, $v );
 
-                    // Get file and add to zip archive.
-                    $fs = get_file_storage();
-                    $file = $fs->get_file($contextid, 'question', $k, $id, '/', urldecode($filename) );
+                    $path = substr($src, 0, $filenamestart);
+                    $v = str_replace($path, 'images/', $v);
+                    if ( substr($path, 0, 14) == '@@PLUGINFILE@@' ) {
+                        // This is for the new way Moodle stores files (pluginfile).
+                        $fs = get_file_storage();
+                        $file = $fs->get_file($contextid, 'question', $k, $id, '/', urldecode($filename) );
+                    } else {
+                        // This is for legacy files stored in Moodle (https://docs.moodle.org/35/en/Legacy_course_files).
+                        // Get question category name from $question->category.
+                        $categoryname = $DB->get_field('question_categories', 'name', array("id" => $questioncatid));
+                        $filepath = '/' . $categoryname . '/';
+                        $fs = get_file_storage();
+                        $file = $fs->get_file($contextid, 'course', 'legacy', 0, $filepath, urldecode($filename) );
+                    }
                     $file->copy_content_to($CFG->dataroot.'/temp/qti-export-'.$USER->sesskey.'/'.$safefilename);
                     $this->zip->addFile( $CFG->dataroot . '/temp/qti-export-'.$USER->sesskey.'/'. $safefilename,
                             'images/'.$safefilename);
+                    $instance++; // Try again looking for additional instances.
                 }
                 $question->$k = $v;
             }
@@ -171,7 +189,7 @@ class qformat_qti extends qformat_default {
         $contextid = $question->contextid;
 
         // Scan whole $question object for string @@PLUGINFILE@@ which indicates a reference to an image file.
-        $question = $this->find_images( $question, $contextid );
+        $question = $this->find_images( $question, $contextid, $question->category );
 
         $validquestion = false;
         $xmlparam = new stdClass();

@@ -18,10 +18,12 @@ Feature: Test Exporting questions from QTI format.
     And I am on "Course 1" course homepage
 
   @javascript @_file_upload
-  Scenario: import some GIFT questions
+  Scenario: export some Inspera QTI questions
+    # Need to import some questions first so that the export can be tested (using GIFT format for the import).
     When I navigate to "Import" node in "Course administration > Question bank"
     And I set the field "id_format_gift" to "1"
-    And I upload "question/format/qti/tests/fixtures/questions.qift.txt" file to "Import" filemanager
+    And I upload "question/format/qti/tests/fixtures/questions.gift.txt" file to "Import" filemanager
+    #And I upload "question/format/gift/tests/fixtures/questions.gift.txt" file to "Import" filemanager
     And I press "id_submitbutton"
     Then I should see "Parsing questions from import file."
     And I should see "Importing 9 questions from file"
@@ -33,4 +35,4 @@ Feature: Test Exporting questions from QTI format.
     And I navigate to "Export" node in "Course administration > Question bank"
     And I set the field "id_format_qti" to "1"
     And I press "Export questions to file"
-    And following "click here" should download between "1550" and "1650" bytes
+    And following "click here" should download between "9600" and "10600" bytes
