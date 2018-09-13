@@ -23,6 +23,13 @@
  */
 
 $string['pluginname'] = 'Inspera QTI format';
-$string['pluginname_help'] = 'Inspera QTI format enables all questions in the category to be exported to a single zip file.';
+$string['pluginname_help'] = 'Inspera QTI format enables all questions in the category to be exported to a single zip file that can
+ then be imported into the Inspera assessment system. This export format supports the following question types...<ul>
+<li>Numerical</li>
+<li>Embedded answers (Cloze)</li>
+<li>Multiple choice</li>
+<li>Short answer</li>
+<li>True/False</li>
+</ul>';
 $string['pluginname_link'] = 'qformat/qti';
 $string['privacy:metadata'] = 'The Inspera QTI question format plugin does not store any personal data.';

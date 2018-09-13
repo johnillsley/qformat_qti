@@ -26,6 +26,6 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'qformat_qti';
-$plugin->version   = 2018090600;
+$plugin->version   = 2018091300;
 
 $plugin->maturity  = MATURITY_BETA;
